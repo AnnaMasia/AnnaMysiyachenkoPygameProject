@@ -6,6 +6,7 @@ pygame.init()
 fps = 60        # Частота кадров в нашей игре
 timer = pygame.time.Clock()
 font = pygame.font.Font('assets/font/myFont.ttf', 25)  # Шрифт в игре
+bigfont = pygame.font.Font('assets/font/myFont.ttf', 55)  # Шрифт для окна с окончанием игры
 WIDTH = 900
 HEIGHT = 800
 screen = pygame.display.set_mode([WIDTH, HEIGHT])  # Создаём окно игры
@@ -32,13 +33,14 @@ game_over = False
 game_pause = False
 menu_im = pygame.image.load(f'assets/menus/mainMenu.png')
 gameover_im = pygame.image.load(f'assets/menus/gameOver.png')
+gameover_im = pygame.image.load(f'assets/menus/gameOver.png')
 pause_im = pygame.image.load(f'assets/menus/pause.png')
 for i in range(1, 4):      # Загружаем изображения для 3-х уровней
     background.append(pygame.image.load(f'assets/backgrounds/{i}.png'))  # Фоны
     gameinfo.append(pygame.image.load(f'assets/gameinfo/{i}.png'))  # Меню во время игры
     guns.append(pygame.transform.scale(pygame.image.load(f'assets/guns/{i}.png'), (100, 100)))  # Пистолеты
     if i < 3:  # Загружаем изображения для 1 и 2-го уровней
-        for j in range(1, 4):  # Уменьшаем противников в зависимости от уровня и дальности
+        for j in range(1, 4):   # Уменьшаем противников в зависимости от уровня и дальности
             target_im[i - 1].append(pygame.transform.scale(
                 pygame.image.load(f'assets/targets/{i}/{j}.png'), (120 - (j * 18), 80 - (j * 13))))
     else:
@@ -111,8 +113,127 @@ def shot(targets, coords):  # Функция, отвечающая за выст
     return coords
 
 
+def draw_score():  # Функция, отвечающая за оформление игрового меню
+    point_text = font.render(f'Очки: {points}', True, 'black')
+    screen.blit(point_text, (320, 660))
+    shot_text = font.render(f'Выстрелы: {total_got}', True, 'black')
+    screen.blit(shot_text, (320, 688))
+    time_text = font.render(f'Время: {time1}', True, 'black')
+    screen.blit(time_text, (320, 714))
+    if mode == 0:  # Оформление игрового меню зависит от типа игры, который мы выбирали
+        mode_text = font.render(f'Свободный режим', True, 'black')
+    if mode == 1:
+        mode_text = font.render(f'Осталось патронов: {ammo}', True, 'black')
+    if mode == 2:
+        mode_text = font.render(f'Осталось времени: {time2}', True, 'black')
+    screen.blit(mode_text, (320, 741))
+
+
+def draw_menu():   # Функция для стартового меню
+    global game_over, pause, mode, level, menu, time1, time2, total_got, points, ammo, clicked, new_coords
+    game_over = False
+    pause = False
+    screen.blit(menu_im, (0, 0))
+    mouse_pos = pygame.mouse.get_pos()
+    clicks = pygame.mouse.get_pressed()
+    mode0_button = pygame.rect.Rect((170, 524), (260, 100))   # Реализуем рабочие кнопки
+    mode1_button = pygame.rect.Rect((475, 524), (260, 100))
+    mode2_button = pygame.rect.Rect((170, 661), (260, 100))
+    if mode0_button.collidepoint(mouse_pos) and clicks[0] and not clicked:  # Считывая нажатие на конкретную кнопку
+        # Запускаем конкретный режим игры. Задаём нужные начальные параметры
+        mode = 0
+        level = 1
+        menu = False
+        time1 = 0
+        total_got = 0
+        points = 0
+        clicked = True
+        new_coords = False
+    if mode1_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        mode = 1
+        level = 1
+        menu = False
+        time1 = 0
+        ammo = 82
+        total_got = 0
+        points = 0
+        clicked = True
+        new_coords = False
+    if mode2_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        mode = 2
+        level = 1
+        menu = False
+        time2 = 35
+        time1 = 0
+        total_got = 0
+        points = 0
+        clicked = True
+        new_coords = False
+
+
+def draw_gameover():
+    global clicked, level, pause, menu, game_over, points, time1, time2, total_got
+    if mode == 0:
+        passed_score = time1
+    else:
+        passed_score = points
+    screen.blit(gameover_im, (0, 0))
+    mouse_pos = pygame.mouse.get_pos()
+    clicks = pygame.mouse.get_pressed()
+    stop_button = pygame.rect.Rect((170, 661), (260, 100))  # Реализуем рабочие кнопки
+    reset_button = pygame.rect.Rect((475, 661), (260, 100))
+    screen.blit(bigfont.render(f'{passed_score}', True, 'white'), (615, 480))
+    if reset_button.collidepoint(mouse_pos) and clicks[0] and not clicked:  # На экране окончания игры две кнопки.
+        # Одна возвращает нас в меню, вторая выключает программу
+        clicked = True
+        level = 0
+        pause = False
+        game_over = False
+        menu = True
+        points = 0
+        total_got = 0
+        time1 = 0
+        time2 = 0
+    if stop_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        global run
+        run = False
+
+
+def draw_pause():  # Функция окна паузы
+    global level, pause, menu, points, total_got, time1, time2, clicked, new_coords
+    screen.blit(pause_im, (0, 0))
+    mouse_pos = pygame.mouse.get_pos()
+    clicks = pygame.mouse.get_pressed()
+    countin_button = pygame.rect.Rect((170, 661), (260, 100))  # Реализуем рабочие кнопки
+    reset_button = pygame.rect.Rect((475, 661), (260, 100))
+    if countin_button.collidepoint(mouse_pos) and clicks[0] and not clicked:  # У нас есть две кнопки,
+        # одна возвращает в игру, вторая в меню, аннулируя результаты
+        level = temp_level
+        pause = False
+    if reset_button.collidepoint(mouse_pos) and clicks[0] and not clicked:
+        level = 0
+        pause = False
+        menu = True
+        points = 0
+        total_got = 0
+        time1 = 0
+        time2 = 0
+        clicked = True
+        new_coords = False
+        pygame.mixer.music.play()
+
+
 run = True
 while run:  # Цикл запуска
+    timer.tick(fps)
+    if level != 0:  # Запускаем таймер в игре
+        if vrem < 60:
+            vrem += 1
+        else:
+            vrem = 1
+            time1 += 1
+            if mode == 2:
+                time2 -= 1
     if not new_coords:
         one_coords = [[], [], []]  # Создаём отдельные списки для координат для каждого типа врагов и уровня
         two_coords = [[], [], []]
@@ -134,8 +255,15 @@ while run:  # Цикл запуска
     screen.fill('Black')
     screen.blit(background[level - 1], (0, 0))  # Добавляем фон
     screen.blit(gameinfo[level - 1], (0, HEIGHT - 200))  # Располагаем на экране таблицу, где будет наш счёт
-    if level > 0:  # Если мы не в стартовом меню, то запускаем пистолет и счёт очков
-        draw_gun()
+    if menu:  # Запуск меню
+        level = 0
+        draw_menu()
+    if game_over:  # Запуск экрана окончания игры
+        level = 0
+        draw_gameover()
+    if pause:  # Запуск экрана паузы
+        level = 0
+        draw_pause()
     if level == 1:   # В зависимости от уровня загружаем противников, их координаты и проверяем, попали ли мы в них
         target_box = drew_level(one_coords)
         one_coords = move_level(one_coords)
@@ -156,6 +284,9 @@ while run:  # Цикл запуска
         if got:
             three_coords = shot(target_box, three_coords)
             got = False
+    if level > 0:  # Если мы не в стартовом меню, то запускаем пистолет и счёт очков
+        draw_gun()
+        draw_score()
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -167,8 +298,24 @@ while run:  # Цикл запуска
                 total_got += 1
                 if mode == 1:  # При типе игры, где ограниченное количество патронов, мы должны их уменьшать
                     ammo -= 1
+            if (670 < mouse_posit[0] < 860) and (660 < mouse_posit[1] < 725):
+                temp_level = level
+                pause = True
+                clicked = True
+            if (670 < mouse_posit[0] < 860) and (715 < mouse_posit[1] < 760):
+                menu = True
+                clicked = True
+                new_coords = False
+                pygame.mixer.music.play()
+        if event.type == pygame.MOUSEBUTTONUP and event.button == 1 and clicked:
+            clicked = False
     if level > 0:  # Реализация перехода на следующий уровень при зачистке предыдущего
         if target_box == [[], [], []] and level < 3:
             level += 1
+        if (level == 3 and target_box == [[], [], [], []]) or (mode == 1 and ammo == 0) or (mode == 2 and time2 == 0):
+            # Условия при котором мы перезапускаем игру, возвращаясь в меню
+            new_coords = False
+            game_over = True
+            level = 0
     pygame.display.flip()
 pygame.quit()
