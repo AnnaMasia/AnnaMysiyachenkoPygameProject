@@ -153,7 +153,7 @@ def draw_menu():   # Функция для стартового меню
     clicks = pygame.mouse.get_pressed()
     mode0_button = pygame.rect.Rect((170, 524), (260, 100))   # Реализуем рабочие кнопки
     mode1_button = pygame.rect.Rect((475, 524), (260, 100))
-    mode2_button = pygame.rect.Rect((170, 661), (260, 100))
+    mode2_button = pygame.rect.Rect((310, 661), (260, 100))
     if mode0_button.collidepoint(mouse_pos) and clicks[0] and not clicked:  # Считывая нажатие на конкретную кнопку
         # Запускаем конкретный режим игры. Задаём нужные начальные параметры
         mode = 0
