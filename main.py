@@ -47,6 +47,14 @@ for i in range(1, 4):      # Загружаем изображения для 3-
         for j in range(1, 5):  # Загружаем изображения для 3-го уровня
             target_im[i - 1].append(pygame.transform.scale(
                 pygame.image.load(f'assets/targets/{i}/{j}.png'), (120 - (j * 18), 80 - (j * 13))))
+pygame.mixer.music.load('assets/sounds/background_music.mp3')   # Загружаем музыкальные составляющие игры
+plate_sound = pygame.mixer.Sound('assets/sounds/skelet.mp3')
+plate_sound.set_volume(.5)
+bird_sound = pygame.mixer.Sound('assets/sounds/Duck.mp3')
+bird_sound.set_volume(.3)
+laser_sound = pygame.mixer.Sound('assets/sounds/Laser Gun.wav')
+laser_sound.set_volume(.5)
+pygame.mixer.music.play()
 
 
 def draw_gun():  # Функция для пистолета
@@ -110,6 +118,13 @@ def shot(targets, coords):  # Функция, отвечающая за выст
             if targets[i][j].collidepoint(mouse_pos):
                 coords[i].pop(j)  # При попадании противник исчезает
                 points += 10 + (10 * (i ** 2))  # За каждого врага мы получаем очки. Чем выше враг - тем больше
+                if level == 1:   # При попадании проигрывается характерный звук
+                    bird_sound.play()
+                elif level == 2:
+                    plate_sound.play()
+                elif level == 3:
+                    laser_sound.play()
+
     return coords
 
 
@@ -316,6 +331,7 @@ while run:  # Цикл запуска
             # Условия при котором мы перезапускаем игру, возвращаясь в меню
             new_coords = False
             game_over = True
+            pygame.mixer.music.play()
             level = 0
     pygame.display.flip()
 pygame.quit()
