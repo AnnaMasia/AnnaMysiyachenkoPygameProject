@@ -188,10 +188,7 @@ def draw_menu():   # Функция для стартового меню
 
 def draw_gameover():
     global clicked, level, pause, menu, game_over, points, time1, time2, total_got
-    if mode == 0:
-        passed_score = time1
-    else:
-        passed_score = points
+    passed_score = points
     screen.blit(gameover_im, (0, 0))
     mouse_pos = pygame.mouse.get_pos()
     clicks = pygame.mouse.get_pressed()
